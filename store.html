@@ -112,7 +112,7 @@
             </div>
 
         <div id="empty-state" class="hidden text-center py-20 mt-10">
-            </div>
+        </div>
     </main>
 
     <script>
@@ -153,7 +153,9 @@
         const tableHeader = document.getElementById('table-header');
         const searchInput = document.getElementById('searchInput');
         const brandFilter = document.getElementById('brandFilter');
-        const formatMoney = (amount) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
+        
+        // AQUÍ ESTÁ LA MAGIA QUE SALVA LA EMPRESA DE LA QUIEBRA:
+        const formatMoney = (amount) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount) + ' USD';
 
         function renderProducts(products) {
             productListEl.innerHTML = '';
@@ -171,7 +173,8 @@
 
             itemsToRender.forEach(product => {
                 const theknaPrice = product.listPrice * (1 - DISCOUNT_RATE);
-                const waMessage = encodeURIComponent(`Hola Thekna HUB. Solicito cotización formal de:\n\n*Marca:* ${product.brand}\n*SKU:* ${product.sku}\n*Descripción:* ${product.desc}\n*Precio Thekna Visto:* ${formatMoney(theknaPrice)} USD`);
+                // El mensaje de WA ya tomará automáticamente el "USD" del formatMoney
+                const waMessage = encodeURIComponent(`Hola Thekna HUB. Solicito cotización formal de:\n\n*Marca:* ${product.brand}\n*SKU:* ${product.sku}\n*Descripción:* ${product.desc}\n*Precio Thekna Visto:* ${formatMoney(theknaPrice)}`);
                 const waLink = `https://wa.me/525540431038?text=${waMessage}`;
 
                 const row = document.createElement('div');
@@ -220,21 +223,19 @@
         searchInput.addEventListener('input', filterData);
         brandFilter.addEventListener('change', filterData);
 
-        // ALGORITMO AUTO-ESCÁNER A PRUEBA DE ERRORES DE EXCEL
         Papa.parse("stock.csv", {
             download: true,
-            header: false, // Leemos por columna, no por nombre exacto
+            header: false,
             skipEmptyLines: true,
             complete: function(results) {
                 loadingStateEl.classList.add('hidden');
                 const rawData = results.data;
                 
-                // Identificamos dónde empieza la tabla realmente
                 let startIndex = 0;
                 for(let i=0; i < Math.min(10, rawData.length); i++) {
                     const rowText = rawData[i].join("").toLowerCase();
                     if(rowText.includes("marca") || rowText.includes("sku") || rowText.includes("codigo")) {
-                        startIndex = i + 1; // Brincamos el título
+                        startIndex = i + 1; 
                         break;
                     }
                 }
@@ -243,7 +244,6 @@
                 for(let i = startIndex; i < rawData.length; i++) {
                     const row = rawData[i];
                     
-                    // Si Excel lo guardó usando punto y coma (;) en lugar de comas
                     let colBrand, colSku, colDesc, colPrice;
                     if (row.length === 1 && row[0].includes(';')) {
                         const splitRow = row[0].split(';');
@@ -257,10 +257,8 @@
                     const desc = colDesc ? String(colDesc).trim() : "Consulte con asesor";
                     const priceStr = colPrice ? String(colPrice) : "0";
                     
-                    // Extraemos solo el número del precio
                     const price = parseFloat(priceStr.replace(/[^0-9.-]+/g,""));
 
-                    // Guardamos si hay SKU y el precio es válido
                     if(sku !== "N/A" && sku !== "" && price > 0 && !isNaN(price)) {
                         productsDB.push({ brand, sku, desc, listPrice: price });
                     }
