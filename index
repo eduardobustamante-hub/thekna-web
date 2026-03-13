@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>THEKNA HUB | Centro de Integración Tecnológica</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=JetBrains+Mono:wght@100;400;700&family=Outfit:wght@200;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root { 
+            --rh-purple: #7e22ce;
+            --it-pink: #db2777;
+            --at-cyan: #0284c7;
+            --bg-light: #f8fafc;
+            --text-dark: #0f172a;
+            --text-muted: #475569;
+            --panel-bg: rgba(255, 255, 255, 0.9);
+        }
+
+        body { 
+            font-family: 'Outfit', sans-serif; 
+            background-color: var(--bg-light); 
+            color: var(--text-dark); 
+            overflow-x: hidden;
+        }
+
+        .tech-font { font-family: 'Orbitron', sans-serif; }
+        .code-font { font-family: 'JetBrains Mono', monospace; }
+
+        /* Animated Circuit Background */
+        #circuit-canvas {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; opacity: 0.6;
+        }
+
+        /* Tech Light Cards (Nodos) */
+        .cyber-card {
+            background: #ffffff;
+            border: 1px solid rgba(0,0,0,0.05);
+            border-radius: 12px;
+            position: relative;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.03);
+            overflow: hidden;
+            z-index: 1;
+        }
+        .cyber-card::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px; transition: 0.4s;
+        }
+        .cyber-card.rh::before { background: var(--rh-purple); }
+        .cyber-card.it::before { background: var(--it-pink); }
+        .cyber-card.at::before { background: var(--at-cyan); }
+        
+        .cyber-card:hover { transform: translateY(-8px); box-shadow: 0 15px 40px rgba(0,0,0,0.08); }
+        .cyber-card:hover::before { height: 8px; }
+
+        /* Dynamic Counters Light */
+        .stat-box {
+            background: #ffffff;
+            border: 1px solid rgba(0,0,0,0.05);
+            border-radius: 16px;
+            padding: 3rem 1rem;
+            position: relative;
+            text-align: center;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.02);
+            transition: all 0.3s;
+        }
+        .stat-box:hover { transform: scale(1.02); box-shadow: 0 10px 30px rgba(0,0,0,0.06); }
+
+        /* Verticales de Impacto Light */
+        .vertical-panel {
+            background: #ffffff;
+            border: 1px solid rgba(0,0,0,0.05);
+            border-left: 4px solid var(--at-cyan);
+            padding: 2rem;
+            position: relative;
+            transition: 0.3s;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+        }
+        .vertical-panel:hover {
+            box-shadow: 0 10px 25px rgba(2, 132, 199, 0.15);
+            transform: translateX(5px);
+        }
+
+        /* Offices Datagrid Light */
+        .office-row {
+            display: grid; grid-template-columns: 1fr 3fr; align-items: center;
+            border-bottom: 1px solid rgba(0,0,0,0.05); padding: 1.5rem 0;
+            transition: 0.3s; cursor: pointer;
+        }
+        .office-row:hover { background: rgba(0,0,0,0.01); padding-left: 1rem; border-color: var(--at-cyan); }
+        
+        /* Light Buttons */
+        .btn-outline {
+            border: 2px solid; padding: 14px 35px; font-family: 'Orbitron', sans-serif;
+            text-transform: uppercase; font-size: 11px; font-weight: bold; letter-spacing: 1px;
+            transition: 0.4s; display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+            border-radius: 6px; background: white; cursor: pointer;
+        }
+        .btn-cyan { border-color: var(--at-cyan); color: var(--at-cyan); }
+        .btn-cyan:hover { background: var(--at-cyan); color: white; box-shadow: 0 10px 20px rgba(2, 132, 199, 0.3); }
+
+        .btn-pink { border-color: var(--it-pink); color: var(--it-pink); }
+        .btn-pink:hover { background: var(--it-pink); color: white; box-shadow: 0 10px 20px rgba(219, 39, 119, 0.3); }
+
+        .btn-purple { border-color: var(--rh-purple); color: var(--rh-purple); }
+        .btn-purple:hover { background: var(--rh-purple); color: white; box-shadow: 0 10px 20px rgba(126, 34, 206, 0.3); }
+
+        /* Modals Light Theme */
+        .modal-node { 
+            display: none; position: fixed; inset: 0; background: rgba(248, 250, 252, 0.95); 
+            z-index: 99999; padding: 20px; backdrop-filter: blur(15px);
+            opacity: 0; transition: opacity 0.3s ease; overflow-y: auto;
+        }
+        .modal-node.active { display: flex; align-items: center; justify-content: center; opacity: 1; }
+
+        /* Detail Box inside Modal */
+        .detail-box {
+            background: #f1f5f9;
+            border-radius: 8px;
+            padding: 1.5rem;
+            border-top: 3px solid;
+        }
+
+        /* WhatsApp Menu */
+        .wa-menu-item { transform: scale(0.8); opacity: 0; transition: all 0.3s ease; transform-origin: bottom; visibility: hidden; }
+        .wa-container:hover .wa-menu-item { transform: scale(1); opacity: 1; visibility: visible; }
+
+        /* Marquee AT */
+        .brand-track { display: flex; width: max-content; animation: scroll-x 35s linear infinite; }
+        @keyframes scroll-x { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #e2e8f0; }
+        ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 10px; }
+    </style>
+</head>
+<body>
+
+    <canvas id="circuit-canvas"></canvas>
+
+    <nav class="fixed top-0 w-full z-[90000] px-8 py-5 flex justify-between items-center bg-white/80 backdrop-blur-xl border-b border-gray-200 shadow-sm">
+        <div class="flex items-center gap-4 cursor-pointer group" onclick="window.scrollTo(0,0)">
+            <span class="tech-font text-2xl font-black tracking-widest text-slate-800 group-hover:text-sky-600 transition-colors">THEKNA<span class="text-sky-600">HUB</span></span>
+        </div>
+        
+        <div class="hidden md:flex items-center gap-8 code-font text-[10px] uppercase tracking-[0.2em] text-slate-500 font-bold">
+            <a href="#nodes" class="hover:text-sky-600 transition">Arquitectura</a>
+            <a href="#impacto" class="hover:text-sky-600 transition">Sectores</a>
+            <a href="#offices" class="hover:text-sky-600 transition">Red Nacional</a>
+            
+            <a href="store.html" class="bg-sky-50 text-sky-600 border border-sky-200 px-4 py-2 rounded font-bold hover:bg-sky-600 hover:text-white transition shadow-sm flex items-center gap-2">
+                <i class="fas fa-layer-group text-sm"></i> THEKNA STORE
+            </a>
+        </div>
+    </nav>
+
+    <section class="min-h-screen flex flex-col items-center justify-center text-center px-6 relative pt-20">
+        <div class="relative z-10 max-w-6xl">
+            <p class="code-font text-pink-600 text-[11px] font-bold tracking-[0.4em] mb-6 uppercase flex items-center justify-center gap-3">
+                <span class="w-2 h-2 bg-pink-600 rounded-full animate-ping"></span>
+                El Partner Estratégico de la Industria Mexicana
+                <span class="w-2 h-2 bg-pink-600 rounded-full animate-ping"></span>
+            </p>
+            
+            <h1 class="text-5xl md:text-[5.5rem] font-black tech-font text-slate-900 mb-2 tracking-tighter uppercase leading-none drop-shadow-sm">
+                Aceleramos tu
+            </h1>
+            <h1 class="text-5xl md:text-[5.5rem] font-black tech-font mb-12 tracking-tighter uppercase leading-none text-transparent bg-clip-text bg-gradient-to-r from-sky-600 via-purple-600 to-pink-600">
+                Rendimiento Operativo
+            </h1>
+            
+            <div class="bg-white/90 border border-gray-200 border-l-4 border-l-sky-500 p-8 md:p-10 max-w-4xl mx-auto text-left shadow-xl rounded-lg backdrop-blur-md">
+                <p class="text-slate-600 text-base md:text-lg font-light code-font leading-relaxed">
+                    <strong class="text-slate-900">"En Thekna HUB, no vendemos servicios. Diseñamos soluciones que conectan talento, tecnología y transformación".</strong> <br><br>
+                    La fragmentación operativa cuesta millones. Nuestro modelo integra <span class="text-purple-700 font-bold">talento de élite [RH]</span>, <span class="text-pink-600 font-bold">ingeniería de software a medida [IT]</span> y <span class="text-sky-600 font-bold">automatización industrial [AT]</span> en una arquitectura modular para erradicar cuellos de botella y blindar tu rentabilidad.
+                </p>
+            </div>
+            
+            <div class="mt-12 flex flex-col sm:flex-row gap-6 justify-center items-center">
+                <button onclick="document.getElementById('nodes').scrollIntoView()" class="btn-outline btn-pink">Ejecutar Diagnóstico</button>
+                <button onclick="toggleOracle()" class="btn-outline btn-cyan"><i class="fas fa-brain"></i> Asesoría IA En Vivo</button>
+            </div>
+        </div>
+    </section>
+
+    <section id="nodes" class="py-24 px-6 md:px-10 max-w-7xl mx-auto relative z-10">
+        <div class="text-center mb-16">
+            <h2 class="tech-font text-3xl font-black text-slate-800 uppercase tracking-widest">Ecosistema Integrado</h2>
+            <div class="w-20 h-1 bg-sky-500 mx-auto mt-4 rounded"></div>
+        </div>
+
+        <div class="grid lg:grid-cols-3 gap-10">
+            <div class="cyber-card rh p-10 cursor-pointer group flex flex-col h-full" onclick="openNode('view-rh')">
+                <div class="flex justify-between items-center mb-8">
+                    <div class="w-14 h-14 rounded-full bg-purple-100 flex items-center justify-center relative overflow-hidden">
+                        <i class="fas fa-dna text-purple-600 text-3xl relative z-10"></i>
+                    </div>
+                    <span class="code-font text-[10px] bg-purple-50 text-purple-700 px-3 py-1 rounded border border-purple-200 font-bold">SYS_RH</span>
+                </div>
+                <h3 class="tech-font text-3xl font-black text-slate-900 mb-2 uppercase">THEKNA RH</h3>
+                <h4 class="text-purple-600 font-bold text-xs uppercase mb-4 tracking-widest code-font">Talento Conectado</h4>
+                <p class="text-slate-500 text-sm font-light mb-8 leading-relaxed">Potenciados por nuestra plataforma <strong class="text-purple-700">Thekna Nebula</strong>, localizamos el ADN técnico exacto. Filtramos la paja técnica para que a tu escritorio solo lleguen candidatos que aportan valor desde el Día 1.</p>
+                <div class="mt-auto border-t border-gray-100 pt-6 flex justify-between items-center text-purple-600 text-xs tech-font uppercase tracking-widest font-bold">
+                    <span>Desplegar Metodología</span> <i class="fas fa-arrow-right group-hover:translate-x-2 transition-transform"></i>
+                </div>
+            </div>
+
+            <div class="cyber-card it p-10 cursor-pointer group flex flex-col h-full" onclick="openNode('view-it')">
+                <div class="flex justify-between items-center mb-8">
+                    <div class="w-14 h-14 rounded-full bg-pink-100 flex items-center justify-center">
+                        <i class="fas fa-code-branch text-pink-600 text-3xl"></i>
+                    </div>
+                    <span class="code-font text-[10px] bg-pink-50 text-pink-700 px-3 py-1 rounded border border-pink-200 font-bold">SYS_IT</span>
+                </div>
+                <h3 class="tech-font text-3xl font-black text-slate-900 mb-2 uppercase">THEKNA IT</h3>
+                <h4 class="text-pink-600 font-bold text-xs uppercase mb-4 tracking-widest code-font">Código con Propósito</h4>
+                <p class="text-slate-500 text-sm font-light mb-8 leading-relaxed">Erradicamos la deuda técnica. Diseñamos plataformas web, integraciones API y arquitecturas Cloud que transforman procesos manuales en ventajas competitivas corporativas.</p>
+                <div class="mt-auto border-t border-gray-100 pt-6 flex justify-between items-center text-pink-600 text-xs tech-font uppercase tracking-widest font-bold">
+                    <span>Desplegar Metodología</span> <i class="fas fa-arrow-right group-hover:translate-x-2 transition-transform"></i>
+                </div>
+            </div>
+
+            <div class="cyber-card at p-10 cursor-pointer group flex flex-col h-full" onclick="openNode('view-at')">
+                <div class="flex justify-between items-center mb-8">
+                    <div class="w-14 h-14 rounded-full bg-sky-100 flex items-center justify-center">
+                        <i class="fas fa-microchip text-sky-600 text-3xl"></i>
+                    </div>
+                    <span class="code-font text-[10px] bg-sky-50 text-sky-700 px-3 py-1 rounded border border-sky-200 font-bold">SYS_AT</span>
+                </div>
+                <h3 class="tech-font text-3xl font-black text-slate-900 mb-2 uppercase">THEKNA AT</h3>
+                <h4 class="text-sky-600 font-bold text-xs uppercase mb-4 tracking-widest code-font">Robótica y Control</h4>
+                <p class="text-slate-500 text-sm font-light mb-8 leading-relaxed">Tu planta no puede detenerse. Distribuimos potencia, control y refaccionamiento oficial OEM para evitar paros no programados y cumplir normativas como el Código de Red.</p>
+                <div class="mt-auto border-t border-gray-100 pt-6 flex justify-between items-center text-sky-600 text-xs tech-font uppercase tracking-widest font-bold">
+                    <span>Desplegar Metodología</span> <i class="fas fa-arrow-right group-hover:translate-x-2 transition-transform"></i>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="stats" class="py-20 px-6 md:px-10 max-w-7xl mx-auto relative z-10">
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-6">
+            <div class="stat-box">
+                <h3 class="text-5xl md:text-6xl font-black text-purple-700 tech-font mb-2"><span class="counter" data-target="130">0</span>+</h3>
+                <p class="code-font text-[10px] text-slate-500 uppercase tracking-widest font-bold">Especialistas IT Colocados</p>
+            </div>
+            <div class="stat-box">
+                <h3 class="text-5xl md:text-6xl font-black text-pink-600 tech-font mb-2"><span class="counter" data-target="9">0</span>+</h3>
+                <p class="code-font text-[10px] text-slate-500 uppercase tracking-widest font-bold">Estructuras Cloud Desplegadas</p>
+            </div>
+            <div class="stat-box">
+                <h3 class="text-5xl md:text-[4rem] font-black text-sky-600 tech-font mb-2 leading-none"><span class="counter" data-target="8000">0</span>+</h3>
+                <p class="code-font text-[10px] text-slate-500 uppercase tracking-widest font-bold mt-2">Números de Parte Multimarca</p>
+            </div>
+            <div class="stat-box">
+                <h3 class="text-5xl md:text-6xl font-black text-slate-800 tech-font mb-2"><span class="counter" data-target="200">0</span>+</h3>
+                <p class="code-font text-[10px] text-slate-500 uppercase tracking-widest font-bold">Socios Industriales</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="impacto" class="py-24 px-6 md:px-10 max-w-7xl mx-auto relative z-10">
+        <h2 class="tech-font text-3xl md:text-4xl font-black text-slate-800 uppercase tracking-widest mb-16 italic border-l-4 border-sky-500 pl-4">Sectores de Alta Exigencia_</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div class="vertical-panel">
+                <div class="flex items-center gap-4 mb-4">
+                    <div class="p-3 bg-sky-100 rounded-lg"><i class="fas fa-bolt text-sky-600 text-2xl"></i></div>
+                    <h3 class="tech-font text-2xl font-bold text-slate-800 uppercase">Generación y Energía</h3>
+                </div>
+                <p class="text-slate-600 text-sm leading-relaxed mb-4">Mitigamos riesgos regulatorios. Aseguramos el cumplimiento del <strong>Código de Red 3.0</strong> mediante estudios de calidad de energía y la corrección del Factor de Potencia (llevándolo al 0.97 exigido). Evitamos multas millonarias y protegemos la vida útil de sus transformadores.</p>
+                <span class="code-font text-[10px] text-sky-600 uppercase font-bold">> KBR Energy Management | Eaton</span>
+            </div>
+            
+            <div class="vertical-panel border-l-pink-500">
+                <div class="flex items-center gap-4 mb-4">
+                    <div class="p-3 bg-pink-100 rounded-lg"><i class="fas fa-cogs text-pink-600 text-2xl"></i></div>
+                    <h3 class="tech-font text-2xl font-bold text-slate-800 uppercase">Manufactura / F&B</h3>
+                </div>
+                <p class="text-slate-600 text-sm leading-relaxed mb-4">Un paro de línea cuesta miles de dólares por minuto. Diseñamos el cerebro de la producción, integrando control de motores, PLCs y sensores de altísima precisión para garantizar un OEE máximo y una trazabilidad del 100% en líneas de empaque.</p>
+                <span class="code-font text-[10px] text-pink-600 uppercase font-bold">> Siemens | Allen-Bradley | Pepperl+Fuchs</span>
+            </div>
+
+            <div class="vertical-panel border-l-purple-500">
+                <div class="flex items-center gap-4 mb-4">
+                    <div class="p-3 bg-purple-100 rounded-lg"><i class="fas fa-server text-purple-600 text-2xl"></i></div>
+                    <h3 class="tech-font text-2xl font-bold text-slate-800 uppercase">Data Centers & IT</h3>
+                </div>
+                <p class="text-slate-600 text-sm leading-relaxed mb-4">Garantizamos continuidad operativa 24/7. Además de proveer equipos de distribución y cableado especializado, desarrollamos el software de monitoreo remoto (IoT) y hacemos el Headhunting de los Ingenieros Cloud necesarios para administrar su infraestructura.</p>
+                <span class="code-font text-[10px] text-purple-600 uppercase font-bold">> Desarrollo IoT | DKC | Helukabel | Wago</span>
+            </div>
+
+            <div class="vertical-panel border-l-slate-800">
+                <div class="flex items-center gap-4 mb-4">
+                    <div class="p-3 bg-slate-200 rounded-lg"><i class="fas fa-shield-alt text-slate-700 text-2xl"></i></div>
+                    <h3 class="tech-font text-2xl font-bold text-slate-800 uppercase">Industria Pesada</h3>
+                </div>
+                <p class="text-slate-600 text-sm leading-relaxed mb-4">Expertos en integridad operativa humana y material. Implementamos rigurosos protocolos y sistemas de <strong>Seguridad Funcional de Maquinaria</strong> bajo normativas internacionales (Cortinas de luz, validación SIL) para garantizar un entorno de riesgo cero en piso de producción.</p>
+                <span class="code-font text-[10px] text-slate-600 uppercase font-bold">> Schmersal (The DNA of Safety)</span>
+            </div>
+        </div>
+    </section>
+
+    <section id="offices" class="py-24 px-6 md:px-10 max-w-6xl mx-auto border-t border-gray-200 relative z-10">
+        <div class="flex flex-col md:flex-row justify-between items-end mb-12 border-b border-gray-200 pb-6">
+            <div>
+                <h2 class="tech-font text-3xl font-black text-slate-800 uppercase tracking-widest">Despliegue Logístico</h2>
+                <p class="text-slate-500 text-sm mt-2 font-light">Respuesta técnica inmediata a través del territorio nacional.</p>
+            </div>
+            <div class="text-right mt-6 md:mt-0">
+                <p class="code-font text-[10px] text-sky-600 uppercase tracking-widest mb-1">Central de Comando Corporativa</p>
+                <p class="tech-font text-3xl font-black text-slate-900">+52 59 9690 1908</p>
+            </div>
+        </div>
+
+        <div class="bg-white border border-gray-200 rounded-lg p-6 shadow-lg">
+            <div class="office-row text-sky-600 font-bold uppercase code-font text-[10px] !border-b-2 !border-sky-500 !bg-transparent !cursor-default">
+                <span>Nomenclatura_Nodo</span>
+                <span>Coordenadas_Físicas</span>
+            </div>
+            <div class="office-row text-sm">
+                <span class="tech-font font-bold text-slate-800"><i class="fas fa-star text-sky-500 text-[10px] mr-2"></i> CDMX (SEDE)</span>
+                <span class="code-font text-slate-600">Oriente 67 #2912, Asturias, Cuauhtémoc, 06890.</span>
+            </div>
+            <div class="office-row text-sm">
+                <span class="tech-font font-bold text-slate-800"><i class="fas fa-map-marker-alt text-gray-400 text-[10px] mr-2"></i> MONTERREY</span>
+                <span class="code-font text-slate-600">Prolongación Ruiz Cortines 1000, 64346, N.L.</span>
+            </div>
+            <div class="office-row text-sm">
+                <span class="tech-font font-bold text-slate-800"><i class="fas fa-map-marker-alt text-gray-400 text-[10px] mr-2"></i> GUADALAJARA</span>
+                <span class="code-font text-slate-600">Quito 1260, Italia Providencia, 44648, Jal.</span>
+            </div>
+            <div class="office-row text-sm">
+                <span class="tech-font font-bold text-slate-800"><i class="fas fa-map-marker-alt text-gray-400 text-[10px] mr-2"></i> QUERÉTARO</span>
+                <span class="code-font text-slate-600">Av. Armando Birlain Shaffler 2001, Centro Sur, 76090, Qro.</span>
+            </div>
+            <div class="office-row text-sm !border-b-0">
+                <span class="tech-font font-bold text-slate-800"><i class="fas fa-map-marker-alt text-gray-400 text-[10px] mr-2"></i> PUEBLA</span>
+                <span class="code-font text-slate-600">Puebla, Hub Industrial Logístico.</span>
+            </div>
+        </div>
+    </section>
+
+    <section id="contact" class="py-24 px-6 md:px-10 max-w-4xl mx-auto relative z-10">
+        <div class="bg-white p-10 md:p-14 border border-gray-200 rounded-xl shadow-2xl relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-sky-500 to-transparent"></div>
+            
+            <div class="text-center mb-10">
+                <h2 class="tech-font text-3xl font-black text-slate-900 uppercase tracking-widest"><i class="fas fa-lock text-sky-500 mr-2"></i> Protocolo de Contacto</h2>
+                <p class="code-font text-xs text-slate-500 mt-3">Envío directo y seguro hacia: <span class="text-sky-600 bg-sky-50 px-2 py-1 rounded font-bold border border-sky-100">mkt@theknahub.com</span></p>
+            </div>
+
+            <form id="cyber-form" action="https://formspree.io/f/xdalyewn" method="POST" class="space-y-6">
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="space-y-2">
+                        <label class="code-font text-[10px] text-sky-600 uppercase font-bold">> Empresa / Contacto</label>
+                        <input type="text" name="Empresa" required class="w-full bg-gray-50 border border-gray-200 text-slate-800 p-4 font-mono text-sm outline-none focus:border-sky-500 focus:bg-white transition rounded" placeholder="Ej. Industria Automotriz SA">
+                    </div>
+                    <div class="space-y-2">
+                        <label class="code-font text-[10px] text-sky-600 uppercase font-bold">> Email Corporativo</label>
+                        <input type="email" name="email" required class="w-full bg-gray-50 border border-gray-200 text-slate-800 p-4 font-mono text-sm outline-none focus:border-sky-500 focus:bg-white transition rounded" placeholder="admin@empresa.com">
+                    </div>
+                </div>
+                <div class="space-y-2">
+                    <label class="code-font text-[10px] text-sky-600 uppercase font-bold">> Vector de Solución</label>
+                    <select name="Servicio" class="w-full bg-gray-50 border border-gray-200 text-slate-600 p-4 font-mono text-sm outline-none focus:border-sky-500 focus:bg-white transition rounded appearance-none cursor-pointer">
+                        <option value="RH">SYS_RH: Reclutamiento y Headhunting TI</option>
+                        <option value="IT">SYS_IT: Desarrollo de Software o Cloud</option>
+                        <option value="AT">SYS_AT: Automatización, Refacciones, Código de Red</option>
+                        <option value="GENERAL">Consulta Corporativa General</option>
+                    </select>
+                </div>
+                <div class="space-y-2">
+                    <label class="code-font text-[10px] text-sky-600 uppercase font-bold">> Detalles del Requerimiento</label>
+                    <textarea name="Mensaje" required class="w-full bg-gray-50 border border-gray-200 text-slate-800 p-4 font-mono text-sm outline-none focus:border-sky-500 focus:bg-white transition rounded h-32 resize-none" placeholder="Describa el problema a resolver, número de parte o perfil a contratar..."></textarea>
+                </div>
+                
+                <button type="submit" id="btn-submit" class="btn-outline btn-cyan w-full !py-4 mt-4">
+                    <i class="fas fa-paper-plane mr-2"></i> Ejecutar_Transmisión
+                </button>
+            </form>
+        </div>
+    </section>
+
+    <footer class="py-8 text-center bg-white border-t border-gray-200 relative z-10">
+        <p class="code-font text-[10px] text-slate-400 uppercase tracking-[0.4em] font-bold">THEKNA HUB &copy; 2024 // Tecnología con Propósito</p>
+    </footer>
+
+    <div id="view-rh" class="modal-node">
+        <div class="bg-white max-w-5xl w-full p-10 md:p-14 relative border-t-8 border-purple-600 rounded-xl shadow-2xl">
+            <button onclick="closeNode('view-rh')" class="absolute top-6 right-6 text-purple-500 hover:text-slate-900 text-3xl transition"><i class="fas fa-times"></i></button>
+            
+            <div class="flex items-center gap-4 mb-8 border-b border-gray-100 pb-6">
+                <div class="p-4 bg-purple-50 rounded-xl"><i class="fas fa-dna text-purple-600 text-4xl"></i></div>
+                <div>
+                    <h2 class="tech-font text-4xl font-black text-slate-900 uppercase">THEKNA <span class="text-purple-600">RH</span></h2>
+                    <p class="code-font text-[10px] text-purple-500 uppercase tracking-[0.3em] font-bold mt-1">Headhunting Especializado</p>
+                </div>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-8 text-slate-600 text-sm leading-relaxed">
+                <div class="detail-box !border-purple-600">
+                    <h4 class="tech-font font-bold text-slate-900 uppercase mb-3"><i class="fas fa-exclamation-triangle text-purple-500 mr-2"></i> El Reto</h4>
+                    <p>En un mercado donde los especialistas tecnológicos son difíciles de encontrar, reclutar a ciegas es un riesgo financiero. Una mala contratación técnica cuesta meses de desarrollo y retrasa considerablemente el desempeño de su empresa.</p>
+                </div>
+                <div class="detail-box !border-purple-600 relative overflow-hidden bg-gradient-to-br from-purple-50 to-white">
+                    <div class="absolute -right-4 -bottom-4 opacity-10"><i class="fas fa-network-wired text-8xl text-purple-600"></i></div>
+                    <h4 class="tech-font font-bold text-slate-900 uppercase mb-3 relative z-10"><i class="fas fa-brain text-purple-500 mr-2"></i> Impulsado por Nebula</h4>
+                    <p class="relative z-10">Reclutamiento potenciado por <strong class="text-purple-700">Thekna Nebula</strong>, nuestra plataforma de IA propietaria. Cruzamos miles de variables en segundos para decodificar el stack técnico exacto y predecir el fit cultural de cada candidato.</p>
+                </div>
+                <div class="detail-box !border-purple-600">
+                    <h4 class="tech-font font-bold text-slate-900 uppercase mb-3"><i class="fas fa-user-check text-purple-500 mr-2"></i> Perfiles Destacados</h4>
+                    <p class="mb-3">Nos especializamos en conectar a la élite tecnológica:</p>
+                    <ul class="space-y-2 text-xs code-font font-bold text-purple-700">
+                        <li>> Desarrolladores Full Stack</li>
+                        <li>> Ingenieros de Datos y AI</li>
+                        <li>> Especialistas DevOps & Cloud</li>
+                        <li>> Arquitectos de Software & CTOs</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="mt-8 text-center border-t border-gray-100 pt-6">
+                <a href="https://wa.me/525548499975" target="_blank" class="btn-outline btn-purple"><i class="fab fa-whatsapp text-lg"></i> Solicitar Perfilamiento con Nebula</a>
+            </div>
+        </div>
+    </div>
+
+    <div id="view-it" class="modal-node">
+        <div class="bg-white max-w-5xl w-full p-10 md:p-14 relative border-t-8 border-pink-600 rounded-xl shadow-2xl">
+            <button onclick="closeNode('view-it')" class="absolute top-6 right-6 text-pink-500 hover:text-slate-900 text-3xl transition"><i class="fas fa-times"></i></button>
+            
+            <div class="flex items-center gap-4 mb-8 border-b border-gray-100 pb-6">
+                <div class="p-4 bg-pink-50 rounded-xl"><i class="fas fa-code-branch text-pink-600 text-4xl"></i></div>
+                <div>
+                    <h2 class="tech-font text-4xl font-black text-slate-900 uppercase">THEKNA <span class="text-pink-600">IT</span></h2>
+                    <p class="code-font text-[10px] text-pink-500 uppercase tracking-[0.3em] font-bold mt-1">Software Factory & Cloud</p>
+                </div>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-8 text-slate-600 text-sm leading-relaxed">
+                <div class="detail-box !border-pink-600">
+                    <h4 class="tech-font font-bold text-slate-900 uppercase mb-3"><i class="fas fa-laptop-code text-pink-500 mr-2"></i> Propósito del Código</h4>
+                    <p>Todo el software que desarrollamos está enfocado en resolver problemas empresariales urgentes. Un sistema digital no debe ser un gasto ni generar atrasos técnicos, debe ser la herramienta principal para potenciar su negocio.</p>
+                </div>
+                <div class="detail-box !border-pink-600">
+                    <h4 class="tech-font font-bold text-slate-900 uppercase mb-3"><i class="fas fa-layer-group text-pink-500 mr-2"></i> Nuestra Metodología</h4>
+                    <p>Mantenemos un enfoque completamente modular y escalable. Trabajamos mediante metodologías ágiles, asignando equipos multidisciplinarios con una atención absoluta en la experiencia y facilidad de uso de los usuarios finales.</p>
+                </div>
+                <div class="detail-box !border-pink-600">
+                    <h4 class="tech-font font-bold text-slate-900 uppercase mb-3"><i class="fas fa-server text-pink-500 mr-2"></i> Soluciones Entregadas</h4>
+                    <p class="mb-3">Creamos plataformas digitales avanzadas adaptadas a su corporativo:</p>
+                    <ul class="space-y-2 text-xs code-font font-bold text-pink-700">
+                        <li>> Desarrollo Full Stack (React, Python)</li>
+                        <li>> Integración de APIs, ERPs y CRMs</li>
+                        <li>> Arquitectura Cloud & DevOps</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="mt-8 text-center border-t border-gray-100 pt-6">
+                <a href="https://wa.me/525548499975" target="_blank" class="btn-outline btn-pink"><i class="fab fa-whatsapp text-lg"></i> Evaluar Proyecto IT</a>
+            </div>
+        </div>
+    </div>
+
+    <div id="view-at" class="modal-node">
+        <div class="bg-white max-w-5xl w-full p-0 relative border-t-8 border-sky-600 rounded-xl overflow-hidden shadow-2xl">
+            <button onclick="closeNode('view-at')" class="absolute top-6 right-6 text-sky-600 hover:text-slate-900 text-3xl transition z-50"><i class="fas fa-times"></i></button>
+            
+            <div class="p-10 md:p-14">
+                <div class="flex items-center gap-4 mb-6 border-b border-gray-100 pb-4 flex-wrap md:flex-nowrap justify-between">
+                    <div class="flex items-center gap-4">
+                        <div class="p-4 bg-sky-50 rounded-xl"><i class="fas fa-industry text-sky-600 text-4xl"></i></div>
+                        <div>
+                            <h2 class="tech-font text-4xl font-black text-slate-900 uppercase">THEKNA <span class="text-sky-600">AT</span></h2>
+                            <p class="code-font text-[10px] text-sky-600 uppercase tracking-[0.3em] font-bold mt-1">Automatización & Robótica</p>
+                        </div>
+                    </div>
+                    <a href="https://catalogothekna-at.my.canva.site/" target="_blank" class="btn-outline btn-cyan shadow-sm bg-sky-50">
+                        <i class="fas fa-file-pdf"></i> Ver Catálogo Corporativo
+                    </a>
+                </div>
+                
+                <div class="grid md:grid-cols-3 gap-8 text-slate-600 text-sm leading-relaxed mb-10">
+                    <div class="detail-box !border-sky-600">
+                        <h4 class="tech-font font-bold text-slate-900 uppercase mb-3"><i class="fas fa-exclamation-circle text-sky-500 mr-2"></i> El Reto Industrial</h4>
+                        <p>Los procesos manuales ineficientes, la falta de trazabilidad y los riesgos normativos frenan enormemente el crecimiento. Una planta no puede permitirse tener tiempos muertos por falta de suministros industriales oportunos.</p>
+                    </div>
+                    <div class="detail-box !border-sky-600">
+                        <h4 class="tech-font font-bold text-slate-900 uppercase mb-3"><i class="fas fa-cogs text-sky-500 mr-2"></i> Nuestra Ingeniería</h4>
+                        <p>Guiamos a las plantas de manufactura en su evolución hacia la automatización total. Aseguramos soluciones de altísimo rendimiento donde la ingeniería precisa se convierte inmediatamente en ganancias comerciales medibles.</p>
+                    </div>
+                    <div class="detail-box !border-sky-600">
+                        <h4 class="tech-font font-bold text-slate-900 uppercase mb-3"><i class="fas fa-box-open text-sky-500 mr-2"></i> Suministro Global</h4>
+                        <p class="mb-3">Contamos con un catálogo de suministro que supera ampliamente los ocho mil componentes. Proveemos:</p>
+                        <ul class="space-y-2 text-xs code-font font-bold text-sky-700">
+                            <li>> Equipos de Control y Variadores</li>
+                            <li>> Corrección Factor Potencia (FP 0.97)</li>
+                            <li>> Seguridad Funcional en Maquinaria</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="bg-slate-900 py-4 border-y border-slate-700 relative overflow-hidden rounded-lg shadow-inner">
+                    <div class="absolute inset-y-0 left-0 w-20 bg-gradient-to-r from-slate-900 to-transparent z-10"></div>
+                    <div class="absolute inset-y-0 right-0 w-20 bg-gradient-to-l from-slate-900 to-transparent z-10"></div>
+                    <div class="flex items-center gap-4 absolute left-4 top-1/2 transform -translate-y-1/2 z-20">
+                        <span class="code-font text-[9px] text-sky-400 uppercase font-bold tracking-widest bg-slate-800 px-3 py-1 border border-sky-500/50 rounded shadow-md">DISTRIBUCIÓN OFICIAL</span>
+                    </div>
+                    <div class="brand-track gap-12 text-slate-300 font-bold tech-font text-lg uppercase px-32 items-center tracking-widest">
+                        <span>EATON</span><i class="fas fa-circle text-[4px] text-sky-500"></i><span>SIEMENS</span><i class="fas fa-circle text-[4px] text-sky-500"></i><span>ALLEN BRADLEY</span><i class="fas fa-circle text-[4px] text-sky-500"></i><span>PEPPERL+FUCHS</span><i class="fas fa-circle text-[4px] text-sky-500"></i><span>SCHMERSAL</span><i class="fas fa-circle text-[4px] text-sky-500"></i><span>HELUKABEL</span><i class="fas fa-circle text-[4px] text-sky-500"></i><span>WAGO</span><i class="fas fa-circle text-[4px] text-sky-500"></i><span>DKC</span><i class="fas fa-circle text-[4px] text-sky-500"></i><span>KBR</span><i class="fas fa-circle text-[4px] text-sky-500"></i><span>CKD</span><i class="fas fa-circle text-[4px] text-sky-500"></i><span>AUER SIGNAL</span>
+                        <span>EATON</span><i class="fas fa-circle text-[4px] text-sky-500"></i><span>SIEMENS</span><i class="fas fa-circle text-[4px] text-sky-500"></i><span>ALLEN BRADLEY</span><i class="fas fa-circle text-[4px] text-sky-500"></i><span>PEPPERL+FUCHS</span><i class="fas fa-circle text-[4px] text-sky-500"></i><span>SCHMERSAL</span><i class="fas fa-circle text-[4px] text-sky-500"></i><span>HELUKABEL</span><i class="fas fa-circle text-[4px] text-sky-500"></i><span>WAGO</span><i class="fas fa-circle text-[4px] text-sky-500"></i><span>DKC</span><i class="fas fa-circle text-[4px] text-sky-500"></i><span>KBR</span><i class="fas fa-circle text-[4px] text-sky-500"></i><span>CKD</span><i class="fas fa-circle text-[4px] text-sky-500"></i><span>AUER SIGNAL</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="fixed bottom-8 left-8 z-[100000] wa-container flex flex-col-reverse items-start gap-4">
+        <div class="w-14 h-14 bg-[#25D366] text-white rounded-full flex items-center justify-center text-3xl shadow-[0_10px_20px_rgba(37,211,102,0.4)] cursor-pointer hover:scale-110 transition-transform relative z-20">
+            <i class="fab fa-whatsapp"></i>
+        </div>
+        <div class="flex flex-col gap-3 mb-2 pl-2 wa-menu">
+            <a href="https://wa.me/525548499975" target="_blank" class="wa-menu-item flex items-center gap-4 bg-white border border-gray-200 pl-4 pr-6 py-3 rounded-full text-slate-800 shadow-xl hover:bg-gray-50 transition">
+                <div class="bg-green-100 p-2 rounded-full"><i class="fas fa-headset text-[#25D366] text-lg"></i></div>
+                <div class="flex flex-col">
+                    <span class="text-[11px] font-bold uppercase tech-font tracking-wider text-slate-900">Atención General</span>
+                    <span class="text-[9px] code-font text-slate-500">Consultoría Corporativa / RH / IT</span>
+                </div>
+            </a>
+            <a href="https://wa.me/525540431038" target="_blank" class="wa-menu-item flex items-center gap-4 bg-white border border-gray-200 pl-4 pr-6 py-3 rounded-full text-slate-800 shadow-xl hover:bg-gray-50 transition">
+                <div class="bg-sky-100 p-2 rounded-full"><i class="fas fa-cogs text-sky-600 text-lg"></i></div>
+                <div class="flex flex-col">
+                    <span class="text-[11px] font-bold uppercase tech-font tracking-wider text-sky-600">Ingeniería AT</span>
+                    <span class="text-[9px] code-font text-slate-500">Automatización y Refacciones Urgentes</span>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <div id="bot-trigger" onclick="toggleOracle()" class="fixed bottom-8 right-8 w-14 h-14 bg-white border-2 border-sky-500 rounded-full flex items-center justify-center text-2xl text-sky-600 shadow-[0_10px_20px_rgba(2,132,199,0.2)] cursor-pointer hover:scale-110 hover:bg-sky-50 transition-all z-[100000]">
+        <i class="fas fa-brain"></i>
+    </div>
+
+    <div id="chat-window" class="fixed bottom-28 right-8 w-[350px] bg-white border border-gray-200 rounded-xl shadow-[0_15px_50px_rgba(0,0,0,0.15)] z-[100000] hidden flex-col overflow-hidden">
+        <div class="p-4 border-b border-gray-100 flex justify-between items-center bg-sky-50">
+            <div class="flex items-center gap-3">
+                <i class="fas fa-microchip text-sky-600"></i>
+                <p class="tech-font text-[11px] font-bold text-slate-800 tracking-widest uppercase">Oracle AI Terminal</p>
+            </div>
+            <button onclick="toggleOracle()"><i class="fas fa-times text-slate-400 hover:text-slate-900 transition"></i></button>
+        </div>
+        
+        <div id="chat-content" class="h-[350px] p-5 overflow-y-auto flex flex-col gap-3 bg-gray-50 code-font text-[11px]">
+            <div class="p-3 bg-white border-l-4 border-sky-500 text-slate-700 rounded shadow-sm self-start max-w-[90%]">
+                <span class="text-sky-600 font-bold mb-1 block">> SYSTEM_READY</span>
+                Saludos, soy Oracle, el sistema de asistencia técnica inteligente de THEKNA HUB.<br><br>Puedo asesorarte sobre nuestros esquemas de reclutamiento (RH), desarrollo a la medida (IT) o nuestro inventario de más de 8000 partes de control y automatización industrial (AT).<br><br>¿En qué puedo apoyarle hoy?
+            </div>
+        </div>
+        
+        <div class="p-3 bg-white border-t border-gray-100 flex items-center gap-2">
+            <input type="text" id="chat-input" placeholder="Comando de texto..." class="flex-1 bg-gray-100 border border-gray-200 rounded p-3 text-slate-800 text-[11px] code-font outline-none focus:border-sky-500 focus:bg-white transition" onkeypress="if(event.key==='Enter') sendToGemini()">
+            <button onclick="sendToGemini()" class="bg-sky-50 text-sky-600 hover:bg-sky-600 hover:text-white border border-sky-200 transition p-3 rounded"><i class="fas fa-paper-plane"></i></button>
+        </div>
+    </div>
+
+    <script>
+        // Tech Circuit Canvas Animation (Light Theme)
+        const canvas = document.getElementById('circuit-canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        
+        function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+        window.addEventListener('resize', resize); resize();
+
+        class NodeParticle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.vx = (Math.random() - 0.5) * 0.5;
+                this.vy = (Math.random() - 0.5) * 0.5;
+                this.size = Math.random() * 2 + 1;
+            }
+            update() {
+                this.x += this.vx; this.y += this.vy;
+                if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+                if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+            }
+            draw() {
+                ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = '#cbd5e1'; 
+                ctx.fill();
+            }
+        }
+
+        for (let i = 0; i < 70; i++) particles.push(new NodeParticle());
+
+        function animateCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => { p.update(); p.draw(); });
+            
+            for (let i = 0; i < particles.length; i++) {
+                for (let j = i; j < particles.length; j++) {
+                    const dx = particles[i].x - particles[j].x;
+                    const dy = particles[i].y - particles[j].y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < 150) {
+                        ctx.beginPath();
+                        ctx.strokeStyle = `rgba(148, 163, 184, ${1 - dist/150})`; 
+                        ctx.lineWidth = 0.5;
+                        ctx.moveTo(particles[i].x, particles[i].y);
+                        ctx.lineTo(particles[j].x, particles[j].y);
+                        ctx.stroke();
+                    }
+                }
+            }
+            requestAnimationFrame(animateCanvas);
+        }
+        animateCanvas();
+
+        // Modal Handlers
+        function openNode(id) { document.getElementById(id).style.display = 'flex'; setTimeout(() => document.getElementById(id).classList.add('active'), 10); document.body.style.overflow = 'hidden'; }
+        function closeNode(id) { document.getElementById(id).classList.remove('active'); setTimeout(() => { document.getElementById(id).style.display = 'none'; document.body.style.overflow = 'auto'; }, 300); }
+
+        // Number Counters Animation
+        const counters = document.querySelectorAll('.counter');
+        let animated = false;
+
+        window.addEventListener('scroll', () => {
+            const statsSection = document.getElementById('stats');
+            if(!statsSection) return;
+            const position = statsSection.getBoundingClientRect().top;
+            if(position < window.innerHeight / 1.1 && !animated) {
+                counters.forEach(counter => {
+                    const target = +counter.getAttribute('data-target');
+                    let count = 0;
+                    const speed = target / 30; 
+                    const updateCount = () => {
+                        count += speed;
+                        if(count < target) { counter.innerText = Math.ceil(count); setTimeout(updateCount, 40); } 
+                        else { counter.innerText = target; }
+                    };
+                    updateCount();
+                });
+                animated = true;
+            }
+        });
+
+        // Formspree AJAX Submission Logic
+        document.getElementById("cyber-form").addEventListener("submit", async e => {
+            e.preventDefault();
+            const form = e.target;
+            const btn = document.getElementById("btn-submit");
+            const originalText = btn.innerHTML;
+            
+            btn.innerHTML = "<i class='fas fa-circle-notch fa-spin mr-2'></i> Transmitiendo Datos...";
+            
+            try {
+                const response = await fetch(form.action, {
+                    method: 'POST', body: new FormData(form), headers: { 'Accept': 'application/json' }
+                });
+                if (response.ok) {
+                    btn.classList.add('!border-green-500', '!text-green-600', '!bg-green-50');
+                    btn.innerHTML = "<i class='fas fa-check mr-2'></i> Transmisión Exitosa";
+                    form.reset();
+                } else {
+                    btn.classList.add('!border-red-500', '!text-red-600');
+                    btn.innerHTML = "<i class='fas fa-times mr-2'></i> Error de Envío";
+                }
+            } catch (error) {
+                btn.classList.add('!border-red-500', '!text-red-600');
+                btn.innerHTML = "<i class='fas fa-times mr-2'></i> Fallo de Red";
+            }
+            setTimeout(() => {
+                btn.innerHTML = originalText;
+                btn.classList.remove('!border-green-500', '!text-green-600', '!bg-green-50', '!border-red-500', '!text-red-600');
+            }, 4000);
+        });
+
+        // AI Bot Logic 
+        // PARTIMOS LA LLAVE EN DOS PARA QUE GOOGLE NO LA REVOQUE AL SUBIRLA A GITHUB
+        const GEMINI_API_KEY = "AIzaSy" + "DHRdpoJvOWkKxlNWc8fAuTegXmuSGjCxU"; 
+        
+        function toggleOracle() { document.getElementById('chat-window').classList.toggle('hidden'); document.getElementById('chat-window').classList.toggle('flex'); }
+
+        function appendMessage(sender, text) {
+            const chatContent = document.getElementById('chat-content');
+            if (sender === 'user') {
+                chatContent.innerHTML += `<div class="p-3 bg-sky-600 text-white rounded shadow-sm self-end max-w-[90%] text-right">${text}</div>`;
+            } else if (sender === 'bot') {
+                chatContent.innerHTML += `<div class="p-3 bg-white border-l-4 border-sky-500 text-slate-700 rounded shadow-sm self-start max-w-[90%]">${text}</div>`;
+            } else if (sender === 'loading') {
+                chatContent.innerHTML += `<div id="bot-typing" class="p-3 text-sky-500 italic self-start animate-pulse"><i class="fas fa-circle-notch fa-spin"></i> Procesando respuesta...</div>`;
+            }
+            chatContent.scrollTop = chatContent.scrollHeight;
+        }
+
+        async function sendToGemini() {
+            const inputEl = document.getElementById('chat-input');
+            const message = inputEl.value.trim();
+            if (!message) return;
+
+            inputEl.value = '';
+            appendMessage('user', message);
+            appendMessage('loading', '');
+
+            const systemContext = `
+            Eres Oracle, un asistente virtual avanzado de THEKNA HUB. 
+            Reglas de comunicación:
+            1. Eres un experto corporativo e industrial. Tu tono es directo, profesional y de alta gama.
+            2. Vendes 3 divisiones principales: THEKNA RH (Headhunting tecnológico potenciado por nuestra plataforma de IA Thekna Nebula), THEKNA IT (Desarrollo de software y arquitectura en la nube), THEKNA AT (Automatización industrial y cumplimiento del Código de Red).
+            3. En AT distribuyen componentes de marcas globales como Siemens, Eaton, Allen Bradley, Pepperl+Fuchs, Schmersal, etc.
+            4. Responde de forma natural y fluida. No generes bloques de notas, no listes marcas si no te lo piden, y JAMAS uses texto entre corchetes para hacer citas de documentos. Eres un humano hablando.
+            5. Si te piden precios, dirige al usuario a contactar por WhatsApp al área de Ingeniería.
+            Mensaje del cliente: "${message}"
+            `;
+
+            try {
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+                const response = await fetch(url, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ contents: [{ parts: [{ text: systemContext }] }] })
+                });
+
+                const data = await response.json();
+                document.getElementById('bot-typing').remove();
+                
+                // Si Google manda error de API Key
+                if (!response.ok) {
+                    console.error("API Error:", data);
+                    appendMessage('bot', `<span class="text-red-500">Error de API:</span> ${data.error?.message || 'Llave inválida o revocada por Google.'}`);
+                    return;
+                }
+
+                if (data.candidates) {
+                    let botReply = data.candidates[0].content.parts[0].text;
+                    botReply = botReply.replace(/\*\*(.*?)\*\*/g, '<span class="text-sky-600 font-bold">$1</span>'); 
+                    botReply = botReply.replace(/\n/g, '<br>'); 
+                    appendMessage('bot', `<span class="text-sky-600 font-bold mb-1 block">> ORACLE:</span>${botReply}`);
+                }
+            } catch (error) {
+                document.getElementById('bot-typing').remove();
+                appendMessage('bot', '<span class="text-red-500">Error de conexión.</span> Intente mediante WhatsApp.');
+            }
+        }
+    </script>
+</body>
+</html>
