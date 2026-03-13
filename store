@@ -8,6 +8,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=JetBrains+Mono:wght@100;400;700&family=Outfit:wght@200;400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+
     <style>
         :root { 
             --at-cyan: #0284c7;
@@ -25,61 +27,27 @@
         .tech-font { font-family: 'Orbitron', sans-serif; }
         .code-font { font-family: 'JetBrains Mono', monospace; }
 
-        /* Tech Network Canvas Background */
-        #circuit-canvas {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; opacity: 0.4;
-        }
+        #circuit-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; opacity: 0.4; }
 
-        /* Product Data Grid */
         .data-row {
-            background: #ffffff;
-            border: 1px solid rgba(0,0,0,0.05);
-            border-radius: 8px;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+            background: #ffffff; border: 1px solid rgba(0,0,0,0.05); border-radius: 8px;
+            transition: all 0.3s ease; box-shadow: 0 4px 6px rgba(0,0,0,0.02);
         }
-        .data-row:hover {
-            border-color: var(--at-cyan);
-            box-shadow: 0 10px 25px rgba(2, 132, 199, 0.15);
-            transform: translateX(4px);
-        }
+        .data-row:hover { border-color: var(--at-cyan); box-shadow: 0 10px 25px rgba(2, 132, 199, 0.15); transform: translateX(4px); }
 
-        /* Buttons */
         .btn-quote {
-            background: var(--bg-light);
-            border: 1px solid var(--at-cyan);
-            color: var(--at-cyan);
-            padding: 10px 20px;
-            border-radius: 6px;
-            font-family: 'Orbitron', sans-serif;
-            font-size: 10px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            transition: 0.3s;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
+            background: var(--bg-light); border: 1px solid var(--at-cyan); color: var(--at-cyan);
+            padding: 10px 20px; border-radius: 6px; font-family: 'Orbitron', sans-serif; font-size: 10px;
+            font-weight: 700; text-transform: uppercase; letter-spacing: 1px; transition: 0.3s;
+            cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
         }
-        .btn-quote:hover {
-            background: var(--at-cyan);
-            color: #ffffff;
-            box-shadow: 0 8px 15px rgba(2, 132, 199, 0.3);
-        }
+        .btn-quote:hover { background: var(--at-cyan); color: #ffffff; box-shadow: 0 8px 15px rgba(2, 132, 199, 0.3); }
 
-        /* Search Input */
         .search-hud {
-            background: #ffffff;
-            border: 2px solid rgba(2, 132, 199, 0.3);
-            border-radius: 8px;
-            box-shadow: 0 10px 30px rgba(2, 132, 199, 0.1);
-            transition: 0.3s;
+            background: #ffffff; border: 2px solid rgba(2, 132, 199, 0.3); border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(2, 132, 199, 0.1); transition: 0.3s;
         }
-        .search-hud:focus-within {
-            border-color: var(--at-cyan);
-            box-shadow: 0 10px 40px rgba(2, 132, 199, 0.2);
-        }
+        .search-hud:focus-within { border-color: var(--at-cyan); box-shadow: 0 10px 40px rgba(2, 132, 199, 0.2); }
 
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #e2e8f0; }
@@ -106,9 +74,19 @@
 
     <main class="pt-32 pb-24 px-6 md:px-10 max-w-7xl mx-auto relative z-10">
         
-        <div class="mb-10">
-            <h1 class="tech-font text-4xl md:text-5xl font-black text-slate-900 uppercase tracking-tighter">Inventario <span class="text-sky-600">Industrial</span></h1>
-            <p class="text-slate-500 mt-2 font-light max-w-2xl leading-relaxed">Acceso directo a nuestro stock de marcas globales. Consulta especificaciones y obtén el <strong>Precio Thekna</strong> exclusivo para integradores y proyectos B2B.</p>
+        <div class="mb-10 flex flex-col md:flex-row justify-between items-end gap-6">
+            <div>
+                <h1 class="tech-font text-4xl md:text-5xl font-black text-slate-900 uppercase tracking-tighter">Inventario <span class="text-sky-600">Industrial</span></h1>
+                <p class="text-slate-500 mt-2 font-light max-w-xl leading-relaxed">Acceso directo a más de 8000 números de parte en marcas globales. <strong>Aprovecha el Precio Thekna con 25% de descuento sobre precio de lista.</strong></p>
+            </div>
+            
+            <div class="bg-green-50 border border-green-200 p-4 rounded-lg flex items-center gap-4">
+                <div class="bg-green-100 p-3 rounded-full text-green-600 text-xl"><i class="fas fa-tags"></i></div>
+                <div>
+                    <p class="code-font text-[10px] text-green-700 font-bold tracking-widest uppercase">Estrategia Comercial</p>
+                    <p class="tech-font font-black text-slate-800 text-lg">-25% OFF <span class="font-normal text-sm font-sans text-slate-500">sobre lista</span></p>
+                </div>
+            </div>
         </div>
 
         <div class="search-hud flex items-center p-2 mb-8 bg-white">
@@ -116,18 +94,19 @@
             <input type="text" id="searchInput" placeholder="Buscar por Número de Parte (SKU) o Descripción..." class="flex-1 bg-transparent border-none p-3 text-sm code-font outline-none text-slate-800 placeholder-slate-400">
             <select id="brandFilter" class="bg-slate-50 border border-gray-200 text-slate-600 text-xs code-font p-3 rounded outline-none cursor-pointer hidden md:block">
                 <option value="ALL">Todas las Marcas</option>
-                <option value="EATON">Eaton</option>
-                <option value="SIEMENS">Siemens</option>
-                <option value="ALLEN-BRADLEY">Allen-Bradley</option>
-                <option value="SCHMERSAL">Schmersal</option>
-            </select>
+                </select>
         </div>
 
-        <div class="hidden md:grid grid-cols-12 gap-4 px-6 py-3 mb-2 code-font text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-gray-200 items-center">
+        <div id="loading-state" class="text-center py-20">
+            <i class="fas fa-circle-notch fa-spin text-4xl text-sky-500 mb-4"></i>
+            <p class="code-font text-slate-500 text-sm uppercase tracking-widest">Sincronizando inventario con Thekna Hub...</p>
+        </div>
+
+        <div id="table-header" class="hidden md:grid grid-cols-12 gap-4 px-6 py-3 mb-2 code-font text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-gray-200 items-center">
             <div class="col-span-2">Marca</div>
             <div class="col-span-2">No. Parte / SKU</div>
             <div class="col-span-4">Descripción Técnica</div>
-            <div class="col-span-2 text-right">Cotización (USD)</div>
+            <div class="col-span-2 text-right">Precios (USD)</div>
             <div class="col-span-2 text-right">Acción</div>
         </div>
 
@@ -139,11 +118,10 @@
             <h3 class="tech-font text-2xl font-bold text-slate-400">No se encontraron resultados</h3>
             <p class="text-slate-400 text-sm mt-2">Intente con otro número de parte o contacte a ingeniería.</p>
         </div>
-
     </main>
 
     <script>
-        // Background Animation
+        // Animación de fondo
         const canvas = document.getElementById('circuit-canvas');
         const ctx = canvas.getContext('2d');
         let particles = [];
@@ -188,23 +166,13 @@
         }
         animateCanvas();
 
-        // Database Simulation
-        const productsDB = [
-            { brand: "EATON", sku: "XTCE032C10A", desc: "Contactor 3P 32A 1NO 120VAC", listPrice: 145.50 },
-            { brand: "EATON", sku: "FAZ-C10/1-NA", desc: "Interruptor Termomagnético 1P 10A C UL", listPrice: 42.80 },
-            { brand: "SIEMENS", sku: "6ES7214-1AG40-0XB0", desc: "SIMATIC S7-1200, CPU 1214C, DC/DC/DC", listPrice: 450.00 },
-            { brand: "SIEMENS", sku: "3RV2011-1JA10", desc: "Interruptor de protección de motor 7-10A", listPrice: 85.25 },
-            { brand: "ALLEN-BRADLEY", sku: "1769-L33ER", desc: "CompactLogix 5370 L3 Controller", listPrice: 1850.00 },
-            { brand: "ALLEN-BRADLEY", sku: "100-C23KF10", desc: "Contactor 23A, 24V DC Coil, 1 N.O.", listPrice: 110.00 },
-            { brand: "SCHMERSAL", sku: "AZ 16-12ZVRK", desc: "Interruptor de seguridad con actuador separado", listPrice: 55.40 },
-            { brand: "PEPPERL+FUCHS", sku: "NBB20-L2-A2-V1", desc: "Sensor Inductivo 20mm PNP NO/NC", listPrice: 95.00 },
-            { brand: "EATON", sku: "M22-DDL-GR-X1/X0", desc: "Pulsador doble rasante Verde/Rojo", listPrice: 28.90 },
-            { brand: "SIEMENS", sku: "6ED1052-1MD08-0BA1", desc: "LOGO! 12/24RCE, Módulo lógico", listPrice: 175.50 }
-        ];
-
-        const DISCOUNT_RATE = 0.25; // Mantengo la matemática del descuento interna
+        // LÓGICA DE BASE DE DATOS (CSV)
+        let productsDB = [];
+        const DISCOUNT_RATE = 0.25; 
         const productListEl = document.getElementById('product-list');
         const emptyStateEl = document.getElementById('empty-state');
+        const loadingStateEl = document.getElementById('loading-state');
+        const tableHeader = document.getElementById('table-header');
         const searchInput = document.getElementById('searchInput');
         const brandFilter = document.getElementById('brandFilter');
 
@@ -213,17 +181,20 @@
         function renderProducts(products) {
             productListEl.innerHTML = '';
             
-            if(products.length === 0) {
+            // Renderizamos un límite de 100 productos inicialmente para no trabar el navegador si hay miles. 
+            // Al buscar, muestra los que coincidan.
+            const limit = searchInput.value === '' && brandFilter.value === 'ALL' ? 100 : products.length;
+            const itemsToRender = products.slice(0, limit);
+
+            if(itemsToRender.length === 0) {
                 emptyStateEl.classList.remove('hidden');
                 return;
             } else {
                 emptyStateEl.classList.add('hidden');
             }
 
-            products.forEach(product => {
-                // Cálculo del precio de venta final (25% menos)
+            itemsToRender.forEach(product => {
                 const theknaPrice = product.listPrice * (1 - DISCOUNT_RATE);
-                
                 const waMessage = encodeURIComponent(`Hola Thekna HUB. Solicito cotización formal de:\n\n*Marca:* ${product.brand}\n*SKU:* ${product.sku}\n*Descripción:* ${product.desc}\n*Precio Thekna Visto:* ${formatMoney(theknaPrice)} USD`);
                 const waLink = `https://wa.me/525540431038?text=${waMessage}`;
 
@@ -232,17 +203,14 @@
                 
                 row.innerHTML = `
                     <div class="col-span-1 md:col-span-2 flex items-center">
-                        <span class="code-font text-[10px] bg-slate-100 text-slate-500 px-2 py-1 rounded font-bold border border-slate-200 uppercase">${product.brand}</span>
+                        <span class="code-font text-[10px] bg-slate-100 text-slate-500 px-2 py-1 rounded font-bold border border-slate-200 uppercase truncate max-w-full">${product.brand}</span>
                     </div>
-                    
                     <div class="col-span-1 md:col-span-2">
                         <p class="code-font text-xs text-sky-600 font-bold">${product.sku}</p>
                     </div>
-                    
                     <div class="col-span-1 md:col-span-4">
                         <p class="text-sm text-slate-700 font-medium">${product.desc}</p>
                     </div>
-                    
                     <div class="col-span-1 md:col-span-2 flex flex-row md:flex-col items-center md:items-end justify-between md:justify-center gap-2 md:gap-0 mt-2 md:mt-0 border-t md:border-t-0 border-gray-100 pt-3 md:pt-0">
                         <div class="flex flex-col text-left md:text-right">
                             <span class="text-[10px] text-slate-400 code-font uppercase">Precio Lista</span>
@@ -253,7 +221,6 @@
                             <span class="tech-font text-lg font-black text-slate-900">${formatMoney(theknaPrice)}</span>
                         </div>
                     </div>
-                    
                     <div class="col-span-1 md:col-span-2 text-right mt-2 md:mt-0">
                         <a href="${waLink}" target="_blank" class="btn-quote w-full md:w-auto justify-center">
                             <i class="fab fa-whatsapp text-sm"></i> Cotizar
@@ -277,8 +244,46 @@
 
         searchInput.addEventListener('input', filterData);
         brandFilter.addEventListener('change', filterData);
-        renderProducts(productsDB);
 
+        // LECTURA DEL ARCHIVO CSV REAL USANDO LOS ENCABEZADOS EXACTOS
+        Papa.parse("stock.csv", {
+            download: true,
+            header: true,
+            skipEmptyLines: true,
+            complete: function(results) {
+                // Ocultar loader y mostrar tabla
+                loadingStateEl.classList.add('hidden');
+                tableHeader.classList.remove('hidden');
+
+                // Mapeo exacto basado en las columnas: Marca, SKU, Descripcion, P. Lista USD
+                productsDB = results.data.map(row => {
+                    const rawBrand = row["Marca"] || "N/A";
+                    const rawSku = row["SKU"] || "N/A";
+                    const rawDesc = row["Descripcion"] || "Consulte con asesor";
+                    const rawPrice = row["P. Lista USD"] || "0";
+                    
+                    // Limpia el precio (quita símbolos de dólar o comas)
+                    const cleanPrice = parseFloat(String(rawPrice).replace(/[^0-9.-]+/g,""));
+
+                    return { brand: rawBrand, sku: rawSku, desc: rawDesc, listPrice: cleanPrice };
+                }).filter(p => p.sku !== "N/A" && p.listPrice > 0); // Filtra los vacíos o sin precio
+                
+                // Llenar el filtro de marcas dinámicamente
+                const uniqueBrands = [...new Set(productsDB.map(p => p.brand))];
+                uniqueBrands.sort().forEach(brand => {
+                    const option = document.createElement('option');
+                    option.value = brand;
+                    option.innerText = brand;
+                    brandFilter.appendChild(option);
+                });
+
+                // Renderizamos la primera página de resultados
+                renderProducts(productsDB);
+            },
+            error: function(err) {
+                loadingStateEl.innerHTML = `<i class="fas fa-times-circle text-4xl text-red-500 mb-4"></i><p class="code-font text-red-500">Error: No se encontró el archivo stock.csv. Asegúrese de haberlo subido correctamente a GitHub.</p>`;
+            }
+        });
     </script>
 </body>
 </html>
