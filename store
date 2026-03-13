@@ -16,14 +16,12 @@
             --bg-light: #f8fafc;
             --text-dark: #0f172a;
         }
-
         body { 
             font-family: 'Outfit', sans-serif; 
             background-color: var(--bg-light); 
             color: var(--text-dark); 
             overflow-x: hidden;
         }
-
         .tech-font { font-family: 'Orbitron', sans-serif; }
         .code-font { font-family: 'JetBrains Mono', monospace; }
 
@@ -94,12 +92,12 @@
             <input type="text" id="searchInput" placeholder="Buscar por Número de Parte (SKU) o Descripción..." class="flex-1 bg-transparent border-none p-3 text-sm code-font outline-none text-slate-800 placeholder-slate-400">
             <select id="brandFilter" class="bg-slate-50 border border-gray-200 text-slate-600 text-xs code-font p-3 rounded outline-none cursor-pointer hidden md:block">
                 <option value="ALL">Todas las Marcas</option>
-                </select>
+            </select>
         </div>
 
         <div id="loading-state" class="text-center py-20">
             <i class="fas fa-circle-notch fa-spin text-4xl text-sky-500 mb-4"></i>
-            <p class="code-font text-slate-500 text-sm uppercase tracking-widest">Sincronizando inventario con Thekna Hub...</p>
+            <p class="code-font text-slate-500 text-sm uppercase tracking-widest">Analizando base de datos local...</p>
         </div>
 
         <div id="table-header" class="hidden md:grid grid-cols-12 gap-4 px-6 py-3 mb-2 code-font text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-gray-200 items-center">
@@ -113,15 +111,11 @@
         <div id="product-list" class="space-y-3">
             </div>
 
-        <div id="empty-state" class="hidden text-center py-20">
-            <i class="fas fa-box-open text-6xl text-slate-200 mb-4"></i>
-            <h3 class="tech-font text-2xl font-bold text-slate-400">No se encontraron resultados</h3>
-            <p class="text-slate-400 text-sm mt-2">Intente con otro número de parte o contacte a ingeniería.</p>
-        </div>
+        <div id="empty-state" class="hidden text-center py-20 mt-10">
+            </div>
     </main>
 
     <script>
-        // Animación de fondo
         const canvas = document.getElementById('circuit-canvas');
         const ctx = canvas.getContext('2d');
         let particles = [];
@@ -147,26 +141,10 @@
         function animateCanvas() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             particles.forEach(p => { p.update(); p.draw(); });
-            for (let i = 0; i < particles.length; i++) {
-                for (let j = i; j < particles.length; j++) {
-                    const dx = particles[i].x - particles[j].x;
-                    const dy = particles[i].y - particles[j].y;
-                    const dist = Math.sqrt(dx * dx + dy * dy);
-                    if (dist < 150) {
-                        ctx.beginPath();
-                        ctx.strokeStyle = `rgba(148, 163, 184, ${1 - dist/150})`; 
-                        ctx.lineWidth = 0.5;
-                        ctx.moveTo(particles[i].x, particles[i].y);
-                        ctx.lineTo(particles[j].x, particles[j].y);
-                        ctx.stroke();
-                    }
-                }
-            }
             requestAnimationFrame(animateCanvas);
         }
         animateCanvas();
 
-        // LÓGICA DE BASE DE DATOS (CSV)
         let productsDB = [];
         const DISCOUNT_RATE = 0.25; 
         const productListEl = document.getElementById('product-list');
@@ -175,18 +153,16 @@
         const tableHeader = document.getElementById('table-header');
         const searchInput = document.getElementById('searchInput');
         const brandFilter = document.getElementById('brandFilter');
-
         const formatMoney = (amount) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
 
         function renderProducts(products) {
             productListEl.innerHTML = '';
             
-            // Renderizamos un límite de 100 productos inicialmente para no trabar el navegador si hay miles. 
-            // Al buscar, muestra los que coincidan.
             const limit = searchInput.value === '' && brandFilter.value === 'ALL' ? 100 : products.length;
             const itemsToRender = products.slice(0, limit);
 
             if(itemsToRender.length === 0) {
+                emptyStateEl.innerHTML = `<i class="fas fa-box-open text-6xl text-slate-200 mb-4"></i><h3 class="tech-font text-2xl font-bold text-slate-400">Búsqueda sin resultados</h3><p class="text-slate-400 text-sm mt-2">No encontramos ese número de parte.</p>`;
                 emptyStateEl.classList.remove('hidden');
                 return;
             } else {
@@ -200,7 +176,6 @@
 
                 const row = document.createElement('div');
                 row.className = 'data-row p-4 md:p-5 grid grid-cols-1 md:grid-cols-12 gap-4 items-center relative overflow-hidden';
-                
                 row.innerHTML = `
                     <div class="col-span-1 md:col-span-2 flex items-center">
                         <span class="code-font text-[10px] bg-slate-100 text-slate-500 px-2 py-1 rounded font-bold border border-slate-200 uppercase truncate max-w-full">${product.brand}</span>
@@ -245,43 +220,67 @@
         searchInput.addEventListener('input', filterData);
         brandFilter.addEventListener('change', filterData);
 
-        // LECTURA DEL ARCHIVO CSV REAL USANDO LOS ENCABEZADOS EXACTOS
+        // ALGORITMO AUTO-ESCÁNER A PRUEBA DE ERRORES DE EXCEL
         Papa.parse("stock.csv", {
             download: true,
-            header: true,
+            header: false, // Leemos por columna, no por nombre exacto
             skipEmptyLines: true,
             complete: function(results) {
-                // Ocultar loader y mostrar tabla
                 loadingStateEl.classList.add('hidden');
-                tableHeader.classList.remove('hidden');
-
-                // Mapeo exacto basado en las columnas: Marca, SKU, Descripcion, P. Lista USD
-                productsDB = results.data.map(row => {
-                    const rawBrand = row["Marca"] || "N/A";
-                    const rawSku = row["SKU"] || "N/A";
-                    const rawDesc = row["Descripcion"] || "Consulte con asesor";
-                    const rawPrice = row["P. Lista USD"] || "0";
-                    
-                    // Limpia el precio (quita símbolos de dólar o comas)
-                    const cleanPrice = parseFloat(String(rawPrice).replace(/[^0-9.-]+/g,""));
-
-                    return { brand: rawBrand, sku: rawSku, desc: rawDesc, listPrice: cleanPrice };
-                }).filter(p => p.sku !== "N/A" && p.listPrice > 0); // Filtra los vacíos o sin precio
+                const rawData = results.data;
                 
-                // Llenar el filtro de marcas dinámicamente
-                const uniqueBrands = [...new Set(productsDB.map(p => p.brand))];
-                uniqueBrands.sort().forEach(brand => {
-                    const option = document.createElement('option');
-                    option.value = brand;
-                    option.innerText = brand;
-                    brandFilter.appendChild(option);
-                });
+                // Identificamos dónde empieza la tabla realmente
+                let startIndex = 0;
+                for(let i=0; i < Math.min(10, rawData.length); i++) {
+                    const rowText = rawData[i].join("").toLowerCase();
+                    if(rowText.includes("marca") || rowText.includes("sku") || rowText.includes("codigo")) {
+                        startIndex = i + 1; // Brincamos el título
+                        break;
+                    }
+                }
 
-                // Renderizamos la primera página de resultados
-                renderProducts(productsDB);
-            },
-            error: function(err) {
-                loadingStateEl.innerHTML = `<i class="fas fa-times-circle text-4xl text-red-500 mb-4"></i><p class="code-font text-red-500">Error: No se encontró el archivo stock.csv. Asegúrese de haberlo subido correctamente a GitHub.</p>`;
+                productsDB = [];
+                for(let i = startIndex; i < rawData.length; i++) {
+                    const row = rawData[i];
+                    
+                    // Si Excel lo guardó usando punto y coma (;) en lugar de comas
+                    let colBrand, colSku, colDesc, colPrice;
+                    if (row.length === 1 && row[0].includes(';')) {
+                        const splitRow = row[0].split(';');
+                        colBrand = splitRow[0]; colSku = splitRow[1]; colDesc = splitRow[2]; colPrice = splitRow[3];
+                    } else {
+                        colBrand = row[0]; colSku = row[1]; colDesc = row[2]; colPrice = row[3];
+                    }
+
+                    const brand = colBrand ? String(colBrand).trim() : "N/A";
+                    const sku = colSku ? String(colSku).trim() : "N/A";
+                    const desc = colDesc ? String(colDesc).trim() : "Consulte con asesor";
+                    const priceStr = colPrice ? String(colPrice) : "0";
+                    
+                    // Extraemos solo el número del precio
+                    const price = parseFloat(priceStr.replace(/[^0-9.-]+/g,""));
+
+                    // Guardamos si hay SKU y el precio es válido
+                    if(sku !== "N/A" && sku !== "" && price > 0 && !isNaN(price)) {
+                        productsDB.push({ brand, sku, desc, listPrice: price });
+                    }
+                }
+
+                if(productsDB.length > 0) {
+                    tableHeader.classList.remove('hidden');
+                    const uniqueBrands = [...new Set(productsDB.map(p => p.brand))];
+                    uniqueBrands.sort().forEach(brand => {
+                        if(brand && brand !== "N/A") {
+                            const option = document.createElement('option');
+                            option.value = brand; option.innerText = brand;
+                            brandFilter.appendChild(option);
+                        }
+                    });
+                    renderProducts(productsDB);
+                } else {
+                    emptyStateEl.innerHTML = `<i class="fas fa-exclamation-triangle text-6xl text-orange-400 mb-4"></i><h3 class="tech-font text-2xl font-bold text-slate-800">Formato de Archivo</h3><p class="text-slate-500 mt-2">Abre tu archivo en Excel y guárdalo usando la opción: <b>CSV (delimitado por comas)</b></p>`;
+                    emptyStateEl.classList.remove('hidden');
+                }
             }
         });
     </script>
